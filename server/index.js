@@ -247,6 +247,26 @@ app.get('/data', function(req, res) {
   })
 });
 
+// Delete all tracking data
+app.delete('/data/clear', async function(req, res) {
+  try {
+    await Note.deleteMany({});
+    res.json({ success: true, message: 'All tracking data cleared' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Delete specific tracking by UUID
+app.delete('/data/:uuid', async function(req, res) {
+  try {
+    await Note.findOneAndDelete({ uuid: req.params.uuid });
+    res.json({ success: true, message: 'Tracking deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })
