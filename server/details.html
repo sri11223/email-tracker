@@ -207,10 +207,15 @@
                         location = parts.join(', ');
                     }
                     
+                    const recipientInfo = event.recipient && event.recipient !== 'Unknown' 
+                        ? `<div class="event-location">👤 Opened by: <strong>${event.recipient}</strong></div>` 
+                        : '';
+                    
                     html += `
                         <div class="event-item ${eventClass}">
                             <span class="badge ${badgeClass}">${badgeText}</span>
                             <div class="event-time">⏰ ${event.time}</div>
+                            ${recipientInfo}
                             <div class="event-location">📍 ${location}</div>
                             <div class="event-location">🌐 IP: ${event.ip}</div>
                         </div>

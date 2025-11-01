@@ -196,7 +196,7 @@
             <div class="card">
                 <h2>🎯 Create Tracking URL</h2>
                 <input type="text" id="title" placeholder="Enter title (e.g., 'Newsletter Oct 2024')">
-                <input type="text" id="recipient" placeholder="Recipient email/name (e.g., 'john@example.com')">
+                <input type="text" id="recipient" placeholder="📧 Recipient email/name (Optional - e.g., 'john@example.com')">
                 <button onclick="createTrackingURL()">Create Tracking URL</button>
                 <div id="createResult"></div>
             </div>
@@ -246,19 +246,25 @@
                 });
                 
                 const data = await response.json();
-                const fullURL = API_URL + '/' + data.uuid;
+                const baseURL = API_URL + '/' + data.uuid;
+                // Add recipient parameter to URL if specified
+                const fullURL = recipient ? `${baseURL}&r=${encodeURIComponent(recipient)}` : baseURL;
                 
                 document.getElementById('createResult').innerHTML = `
                     <div class="result">
                         <strong>✅ Tracking URL Created!</strong><br><br>
-                        <strong>For Email Image:</strong><br>
+                        ${recipient ? `<strong>👤 For: ${recipient}</strong><br><br>` : ''}
+                        <strong>Tracking URL:</strong><br>
                         <code>${fullURL}</code><br>
                         <button class="copy-btn" onclick="copyToClipboard('${fullURL}')">📋 Copy URL</button>
                         <button class="copy-btn" onclick="copyToClipboard('<img src=\\'${fullURL}\\' width=\\'1\\' height=\\'1\\'>')">📋 Copy HTML</button>
+                        <br><br>
+                        <small style="color: #666;">💡 ${recipient ? `Recipient "${recipient}" will be automatically tracked when they open the email!` : 'No recipient specified - tracking will show "Unknown" for who opened it.'}</small>
                     </div>
                 `;
                 
                 document.getElementById('title').value = '';
+                document.getElementById('recipient').value = '';
                 loadTrackingList();
                 
                 // Re-enable button
@@ -300,11 +306,18 @@
                     const stats = item.stats !== 'Null' ? JSON.parse(item.stats) : [];
                     const realOpens = stats.length > 2 ? stats.length - 2 : 0;
                     
+                    // Get unique recipients who actually opened (from tracking events)
+                    const recipients = stats.map(s => s.recipient).filter(r => r && r !== 'Unknown');
+                    const uniqueRecipients = [...new Set(recipients)];
+                    const recipientDisplay = uniqueRecipients.length > 0 
+                        ? uniqueRecipients.join(', ') 
+                        : (item.recipient || 'Not specified');
+                    
                     html += `
                         <div class="tracking-item">
                             <div class="tracking-title">📧 ${item.title}</div>
                             <div class="tracking-meta">
-                                <span class="badge badge-info">👤 ${item.recipient || 'Not specified'}</span>
+                                <span class="badge badge-info">👤 ${recipientDisplay}</span>
                                 <span class="badge badge-success">${opens} Total Opens</span>
                                 <span class="badge badge-warning">~${realOpens} Likely Real</span>
                             </div>

@@ -78,11 +78,12 @@ app.post('/', (req, res) => {
   main()
 })
 
-// http://yourURL.com/p?uuid=
+// http://yourURL.com/p?uuid=&r=recipient@email.com
 app.get('/p', function(req, res) {
   async function main() {
     try {
       var uuidParam = req.query.uuid
+      var recipientParam = req.query.r || 'Unknown'; // Get recipient from URL parameter
       var uuidParamChecker = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(uuidParam)
       
       // Use server's local time and convert to IST
@@ -122,6 +123,7 @@ app.get('/p', function(req, res) {
       // Handle missing location data
       var infoJson =  {
         time: dateTime,
+        recipient: recipientParam,  // Store who opened this email
         ip: location.query || ipAddress,
         country: location.country || 'Unknown',
         regionName: location.regionName || 'Unknown',

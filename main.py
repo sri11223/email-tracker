@@ -14,14 +14,23 @@ url = 'https://email-tracker-ity3.onrender.com/'
 
 def create():
     title = input('enter title: ')
-    recipient = input('enter recipient email/name: ')
+    recipient = input('enter recipient email/name (will be embedded in URL): ')
     myobj = {'title': title, 'recipient': recipient}
     responseData = requests.post(url, data = myobj)
     os.system('cls' if os.name == 'nt' else 'clear')
     try:
         response_json = json.loads(responseData.content.decode("utf-8"))
         if 'uuid' in response_json:
-            print(url + str(response_json['uuid']))
+            tracking_url = url + str(response_json['uuid'])
+            # Add recipient parameter to URL if provided
+            if recipient:
+                tracking_url += f'&r={requests.utils.quote(recipient)}'
+            print('✅ Tracking URL Created!\n')
+            print(f'👤 For: {recipient if recipient else "Not specified"}\n')
+            print(tracking_url)
+            print('\n📋 HTML tag:')
+            print(f'<img src="{tracking_url}" width="1" height="1">')
+            print('\n💡 Tip: The recipient "{}" will be automatically recorded when they open the email!'.format(recipient))
         else:
             print('Error from server:')
             print(response_json)
@@ -78,6 +87,10 @@ def info():
                         for idx, event in enumerate(statsArr):
                             print(f'\n📌 Event #{idx+1}')
                             print(f'⏰ Time: {event["time"]}')
+                            
+                            # Show who opened if available
+                            if 'recipient' in event and event['recipient'] != 'Unknown':
+                                print(f'👤 Opened by: {event["recipient"]}')
                             
                             # Analyze if likely real or scan
                             if idx < 2:
@@ -146,6 +159,10 @@ def info():
                         for idx, event in enumerate(statsArr):
                             print(f'\n📌 Event #{idx+1}')
                             print(f'⏰ Time: {event["time"]}')
+                            
+                            # Show who opened if available
+                            if 'recipient' in event and event['recipient'] != 'Unknown':
+                                print(f'👤 Opened by: {event["recipient"]}')
                             
                             # Analyze if likely real or scan
                             if idx < 2:
