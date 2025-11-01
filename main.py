@@ -58,47 +58,48 @@ def info():
                 if statsArr != 'Null':
                     statsArr = json.loads(statsArr)
                     
-                    # Filter out proxy/scanner opens
-                    realOpens = [s for s in statsArr if not s.get('isProxy', False)]
-                    proxyOpens = [s for s in statsArr if s.get('isProxy', False)]
+                    # Separate clicks from opens
+                    clicks = [s for s in statsArr if s.get('type') == 'click']
+                    opens = [s for s in statsArr if s.get('type') != 'click']
                     
                     print('=' * 60)
                     print(f'📧 Email Tracking Report for: {var}')
                     print('=' * 60)
                     
-                    if len(realOpens) > 0:
-                        print(f'✅ REAL OPENS (Actual Recipients): {len(realOpens)}')
+                    # Show clicks first (most reliable)
+                    if len(clicks) > 0:
+                        print(f'\n🖱️  CONFIRMED CLICKS (100% Real User): {len(clicks)}')
                         print('-' * 60)
-                        x = 0
-                        while x < len(realOpens):
-                            print(f'\n🔍 Open #{x+1}')
-                            print(f'⏰ Time: {realOpens[x]["time"]}')
+                        for idx, click in enumerate(clicks):
+                            print(f'\n✅ Click #{idx+1}')
+                            print(f'⏰ Time: {click["time"]}')
                             
-                            # Only show if not "Unknown"
-                            if realOpens[x]['country'] != 'Unknown':
+                            if click['country'] != 'Unknown':
                                 location_parts = []
-                                if realOpens[x]['city'] != 'Unknown':
-                                    location_parts.append(realOpens[x]['city'])
-                                if realOpens[x]['regionName'] != 'Unknown':
-                                    location_parts.append(realOpens[x]['regionName'])
-                                if realOpens[x]['country'] != 'Unknown':
-                                    location_parts.append(realOpens[x]['country'])
+                                if click['city'] != 'Unknown':
+                                    location_parts.append(click['city'])
+                                if click['regionName'] != 'Unknown':
+                                    location_parts.append(click['regionName'])
+                                if click['country'] != 'Unknown':
+                                    location_parts.append(click['country'])
                                 
                                 if location_parts:
                                     print(f'📍 Location: {", ".join(location_parts)}')
-                                print(f'🌐 IP Address: {realOpens[x]["ip"]}')
+                                print(f'🌐 IP Address: {click["ip"]}')
                             else:
                                 print(f'📍 Location: Not available')
-                                print(f'🌐 IP Address: {realOpens[x]["ip"]}')
-                            
+                                print(f'🌐 IP Address: {click["ip"]}')
                             print('-' * 60)
-                            x += 1
-                    else:
-                        print('📭 No real opens yet (Email not read by recipient)')
                     
-                    if len(proxyOpens) > 0:
-                        print(f'\n🤖 Proxy/Scanner Opens (Gmail/Yahoo servers): {len(proxyOpens)}')
-                        print('   (These are automatic scans, not actual recipients)')
+                    # Show opens (may include Gmail proxy)
+                    if len(opens) > 0:
+                        print(f'\n📬 Image Opens (may include Gmail scans): {len(opens)}')
+                        print('   (Use click tracking for accurate results)')
+                    else:
+                        print('\n📭 No opens yet')
+                    
+                    if len(clicks) == 0 and len(opens) == 0:
+                        print('📭 Email not opened yet')
                     
                     break
                 else:
@@ -118,47 +119,48 @@ def info():
                 if statsArr != 'Null':
                     statsArr = json.loads(statsArr)
                     
-                    # Filter out proxy/scanner opens
-                    realOpens = [s for s in statsArr if not s.get('isProxy', False)]
-                    proxyOpens = [s for s in statsArr if s.get('isProxy', False)]
+                    # Separate clicks from opens
+                    clicks = [s for s in statsArr if s.get('type') == 'click']
+                    opens = [s for s in statsArr if s.get('type') != 'click']
                     
                     print('=' * 60)
                     print(f'📧 Email Tracking Report for ID: {var}')
                     print('=' * 60)
                     
-                    if len(realOpens) > 0:
-                        print(f'✅ REAL OPENS (Actual Recipients): {len(realOpens)}')
+                    # Show clicks first (most reliable)
+                    if len(clicks) > 0:
+                        print(f'\n🖱️  CONFIRMED CLICKS (100% Real User): {len(clicks)}')
                         print('-' * 60)
-                        x = 0
-                        while x < len(realOpens):
-                            print(f'\n🔍 Open #{x+1}')
-                            print(f'⏰ Time: {realOpens[x]["time"]}')
+                        for idx, click in enumerate(clicks):
+                            print(f'\n✅ Click #{idx+1}')
+                            print(f'⏰ Time: {click["time"]}')
                             
-                            # Only show if not "Unknown"
-                            if realOpens[x]['country'] != 'Unknown':
+                            if click['country'] != 'Unknown':
                                 location_parts = []
-                                if realOpens[x]['city'] != 'Unknown':
-                                    location_parts.append(realOpens[x]['city'])
-                                if realOpens[x]['regionName'] != 'Unknown':
-                                    location_parts.append(realOpens[x]['regionName'])
-                                if realOpens[x]['country'] != 'Unknown':
-                                    location_parts.append(realOpens[x]['country'])
+                                if click['city'] != 'Unknown':
+                                    location_parts.append(click['city'])
+                                if click['regionName'] != 'Unknown':
+                                    location_parts.append(click['regionName'])
+                                if click['country'] != 'Unknown':
+                                    location_parts.append(click['country'])
                                 
                                 if location_parts:
                                     print(f'📍 Location: {", ".join(location_parts)}')
-                                print(f'🌐 IP Address: {realOpens[x]["ip"]}')
+                                print(f'🌐 IP Address: {click["ip"]}')
                             else:
                                 print(f'📍 Location: Not available')
-                                print(f'🌐 IP Address: {realOpens[x]["ip"]}')
-                            
+                                print(f'🌐 IP Address: {click["ip"]}')
                             print('-' * 60)
-                            x += 1
-                    else:
-                        print('📭 No real opens yet (Email not read by recipient)')
                     
-                    if len(proxyOpens) > 0:
-                        print(f'\n🤖 Proxy/Scanner Opens (Gmail/Yahoo servers): {len(proxyOpens)}')
-                        print('   (These are automatic scans, not actual recipients)')
+                    # Show opens (may include Gmail proxy)
+                    if len(opens) > 0:
+                        print(f'\n📬 Image Opens (may include Gmail scans): {len(opens)}')
+                        print('   (Use click tracking for accurate results)')
+                    else:
+                        print('\n📭 No opens yet')
+                    
+                    if len(clicks) == 0 and len(opens) == 0:
+                        print('📭 Email not opened yet')
                     
                     break
                 else:

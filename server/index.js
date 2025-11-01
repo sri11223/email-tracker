@@ -101,29 +101,21 @@ app.get('/p', function(req, res) {
       var ip = await fetch(`http://ip-api.com/json/${ipAddress}`);
       var location = await ip.json()
 
-      // List of known proxy/scanner IPs and organizations to ignore
-      var ignoreList = [
-        'Google', 'Gmail', 'Googlebot',
-        'Yahoo', 'Microsoft', 'Outlook',
-        'CloudFlare', 'Cloudflare',
-        'AS15169',  // Google's ASN
-        'Mountain View'  // Google HQ location
-      ];
-      
-      // Check if this is a proxy/scanner (not a real user)
+      // Smart proxy detection: Only flag if it's from known scanner/bot user agents
+      var userAgent = req.headers['user-agent'] || '';
       var isProxy = false;
-      if (location.org && ignoreList.some(term => location.org.includes(term))) {
+      
+      // Check if it's an automated scanner/bot (not a real browser)
+      var botKeywords = ['bot', 'crawler', 'spider', 'scraper', 'scanner'];
+      var isBotAgent = botKeywords.some(keyword => userAgent.toLowerCase().includes(keyword));
+      
+      // Only mark as proxy if it's clearly a bot, otherwise count as real
+      if (isBotAgent) {
         isProxy = true;
       }
-      if (location.isp && ignoreList.some(term => location.isp.includes(term))) {
-        isProxy = true;
-      }
-      if (location.as && ignoreList.some(term => location.as.includes(term))) {
-        isProxy = true;
-      }
-      if (location.city && ignoreList.some(term => location.city.includes(term))) {
-        isProxy = true;
-      }
+      
+      // If from Google servers but has a browser user agent, count as real
+      // (means someone opened it in Gmail, which is a real open)
 
       // Handle missing location data
       var infoJson =  {
@@ -181,6 +173,69 @@ app.get('/p', function(req, res) {
       console.error('Error in GET /p:', error);
       // Still send the image even if tracking fails
       res.sendFile(__dirname + '/img.png');
+    }
+  }
+  main()
+});
+
+// New endpoint for click tracking (more reliable than image opens)
+app.get('/c', function(req, res) {
+  async function main() {
+    try {
+      var uuidParam = req.query.uuid
+      var redirect = req.query.redirect || 'https://www.google.com'
+      
+      // Same tracking logic as /p endpoint
+      var now = new Date();
+      var istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+      var dateTime = istTime.toISOString().split("T")[0] + " " + istTime.toISOString().split("T")[1].split(".")[0] + ' IST';
+
+      var forwardedIps = req.headers['x-forwarded-for'];
+      var ipAddress = 'Unknown';
+      if (forwardedIps) {
+        var ips = forwardedIps.split(',');
+        ipAddress = ips[0].trim();
+      } else {
+        ipAddress = req.connection.remoteAddress || 'Unknown';
+      }
+      
+      var ip = await fetch(`http://ip-api.com/json/${ipAddress}`);
+      var location = await ip.json()
+
+      var infoJson = {
+        time: dateTime,
+        ip: location.query || ipAddress,
+        country: location.country || 'Unknown',
+        regionName: location.regionName || 'Unknown',
+        city: location.city || 'Unknown',
+        isProxy: false,  // Clicks are always real user actions
+        type: 'click',   // Mark as click (not just image open)
+        zip: location.zip || 'Unknown',
+        lat: location.lat ? location.lat.toString() : 'Unknown',
+        lon: location.lon ? location.lon.toString() : 'Unknown',
+        isp: location.isp || 'Unknown',
+        org: location.org || 'Unknown',
+        as: location.as || 'Unknown'
+      }
+
+      // Save tracking data
+      var doc = await Note.findOne({uuid: uuidParam});
+      if (doc) {
+        if (doc.stats == 'Null') {
+          await Note.findOneAndUpdate({ uuid: uuidParam }, { stats: '[' + JSON.stringify(infoJson) + ']' });
+        } else {
+          var arr = JSON.parse(doc.stats);
+          arr.push(infoJson);
+          await Note.findOneAndUpdate({ uuid: uuidParam }, { stats: JSON.stringify(arr) });
+        }
+        Note.findOneAndUpdate({uuid: uuidParam}, {$inc : {'counter' : 1}}).exec();
+      }
+
+      // Redirect to the target URL
+      res.redirect(redirect);
+    } catch (error) {
+      console.error('Error in GET /c:', error);
+      res.redirect('https://www.google.com');
     }
   }
   main()
