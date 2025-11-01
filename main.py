@@ -9,15 +9,24 @@ from requests.models import Response
 # EXAMPLE WITH NGROK:- 
 # url = 'https://9a90-43-242-115-265.ngrok.io/'
 
-#DO NOT USE LOCALHOST IN PRODUCTION***
-url = 'http://localhost:3000/'     
+# Deployed on Render.com
+url = 'https://email-tracker-ity3.onrender.com/'     
 
 def create():
     title = input('enter title: ')
     myobj = {'title': title}
     responseData = requests.post(url, data = myobj)
     os.system('cls' if os.name == 'nt' else 'clear')
-    print(url + str(json.loads(responseData.content.decode("utf-8"))['uuid']))
+    try:
+        response_json = json.loads(responseData.content.decode("utf-8"))
+        if 'uuid' in response_json:
+            print(url + str(response_json['uuid']))
+        else:
+            print('Error from server:')
+            print(response_json)
+    except Exception as e:
+        print(f'Error: {e}')
+        print(f'Server response: {responseData.content.decode("utf-8")}')
     print('\n\n\n')
     
 def getData():

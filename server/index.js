@@ -53,10 +53,10 @@ app.use(express.static(__dirname))
 app.post('/', (req, res) => {
   async function main() {
     try {
-      var dtResponse = await fetch('http://worldtimeapi.org/api/timezone/Etc/UTC');
-      var dtData = await dtResponse.json();
-
-      var dateTime = dtData.datetime.split("T")[0] + " " + dtData.datetime.split("T")[1].split(".")[0] + ' UTC'
+      // Use server's local time instead of external API
+      var now = new Date();
+      var dateTime = now.toISOString().split("T")[0] + " " + now.toISOString().split("T")[1].split(".")[0] + ' UTC';
+      
       var uuid = uuidv4()
       var newNote = new Note({
         title: req.body.title,
@@ -82,9 +82,9 @@ app.get('/p', function(req, res) {
     var uuidParam = req.query.uuid
     var uuidParamChecker = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(uuidParam)
     
-    var dtResponse = await fetch('http://worldtimeapi.org/api/timezone/Etc/UTC');
-    var dtData = await dtResponse.json();
-    var dateTime = dtData.datetime.split("T")[0] + " " + dtData.datetime.split("T")[1].split(".")[0] + ' UTC'
+    // Use server's local time instead of external API
+    var now = new Date();
+    var dateTime = now.toISOString().split("T")[0] + " " + now.toISOString().split("T")[1].split(".")[0] + ' UTC';
 
     var ip = await fetch(`http://ip-api.com/json/${req.headers['x-forwarded-for']}`);
     var location = await ip.json()
