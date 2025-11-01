@@ -58,14 +58,36 @@ def info():
                 if statsArr != 'Null':
                     statsArr = json.loads(statsArr)
                     x = 0
-                    print('For Title: ' + var + '\n')
+                    print('=' * 60)
+                    print(f'📧 Email Tracking Report for: {var}')
+                    print(f'Total Opens: {len(statsArr)}')
+                    print('=' * 60)
                     while len(statsArr) != x:
-                        print('Time Opened: ' + str(statsArr[x]['time']) + ', ' + 'IP Address: ' + str(statsArr[x]['ip']), '\nCountry: ' + str(statsArr[x]['country']) + ', ' + 'Region: ' + str(statsArr[x]['regionName']) + ', ' + 'City: ' + str(statsArr[x]['city']) + ', ' + 'ZIP Code: ' + str(statsArr[x]['zip']) + '\nLatitude: ' + str(statsArr[x]['lat']) + ', ' + 'Longitude: ' + str(statsArr[x]['lon']) + '\nInternet Service Provider(ISP): ' + str(statsArr[x]['isp']) + ', ' + 'Organisation: ' + str(statsArr[x]['org']) + '\nAS number(ASN): ' + str(statsArr[x]['as']))
-                        print('\n')
+                        print(f'\n🔍 Open #{x+1}')
+                        print(f'⏰ Time: {statsArr[x]["time"]}')
+                        
+                        # Only show if not "Unknown"
+                        if statsArr[x]['country'] != 'Unknown':
+                            location_parts = []
+                            if statsArr[x]['city'] != 'Unknown':
+                                location_parts.append(statsArr[x]['city'])
+                            if statsArr[x]['regionName'] != 'Unknown':
+                                location_parts.append(statsArr[x]['regionName'])
+                            if statsArr[x]['country'] != 'Unknown':
+                                location_parts.append(statsArr[x]['country'])
+                            
+                            if location_parts:
+                                print(f'📍 Location: {", ".join(location_parts)}')
+                            print(f'🌐 IP Address: {statsArr[x]["ip"]}')
+                        else:
+                            print(f'📍 Location: Not available (Email opened via proxy/Gmail servers)')
+                            print(f'🌐 IP Address: {statsArr[x]["ip"]}')
+                        
+                        print('-' * 60)
                         x += 1
                     break
                 else:
-                    print('Time Opened: ' + 'Null' + ', ' + 'IP Address: ' + 'Null', '\nCountry: ' + 'Null' + ', ' + 'Region: ' + 'Null' + ', ' + 'City: ' + 'Null' + ', ' + 'ZIP Code: ' + 'Null' + '\nLatitude: ' + 'Null' + ', ' + 'Longitude: ' + 'Null' + '\nInternet Service Provider(ISP): ' + 'Null' + ', ' + 'Organisation: ' + 'Null' + '\nAS number(ASN): ' + 'Null')
+                    print('📭 Email not opened yet')
         
             i += 1 
     
@@ -81,14 +103,36 @@ def info():
                 if statsArr != 'Null':
                     statsArr = json.loads(statsArr)
                     x = 0
-                    print('For Tracking ID: ' + var + '\n')
+                    print('=' * 60)
+                    print(f'📧 Email Tracking Report for ID: {var}')
+                    print(f'Total Opens: {len(statsArr)}')
+                    print('=' * 60)
                     while len(statsArr) != x:
-                        print('Time Opened: ' + str(statsArr[x]['time']) + ', ' + 'IP Address: ' + str(statsArr[x]['ip']), '\nCountry: ' + str(statsArr[x]['country']) + ', ' + 'Region: ' + str(statsArr[x]['regionName']) + ', ' + 'City: ' + str(statsArr[x]['city']) + ', ' + 'ZIP Code: ' + str(statsArr[x]['zip']) + '\nLatitude: ' + str(statsArr[x]['lat']) + ', ' + 'Longitude: ' + str(statsArr[x]['lon']) + '\nInternet Service Provider(ISP): ' + str(statsArr[x]['isp']) + ', ' + 'Organisation: ' + str(statsArr[x]['org']) + '\nAS number(ASN): ' + str(statsArr[x]['as']))
-                        print('\n')
+                        print(f'\n🔍 Open #{x+1}')
+                        print(f'⏰ Time: {statsArr[x]["time"]}')
+                        
+                        # Only show if not "Unknown"
+                        if statsArr[x]['country'] != 'Unknown':
+                            location_parts = []
+                            if statsArr[x]['city'] != 'Unknown':
+                                location_parts.append(statsArr[x]['city'])
+                            if statsArr[x]['regionName'] != 'Unknown':
+                                location_parts.append(statsArr[x]['regionName'])
+                            if statsArr[x]['country'] != 'Unknown':
+                                location_parts.append(statsArr[x]['country'])
+                            
+                            if location_parts:
+                                print(f'📍 Location: {", ".join(location_parts)}')
+                            print(f'🌐 IP Address: {statsArr[x]["ip"]}')
+                        else:
+                            print(f'📍 Location: Not available (Email opened via proxy/Gmail servers)')
+                            print(f'🌐 IP Address: {statsArr[x]["ip"]}')
+                        
+                        print('-' * 60)
                         x += 1
                     break
                 else:
-                    print('Time Opened: ' + 'Null' + ', ' + 'IP Address: ' + 'Null', '\nCountry: ' + 'Null' + ', ' + 'Region: ' + 'Null' + ', ' + 'City: ' + 'Null' + ', ' + 'ZIP Code: ' + 'Null' + '\nLatitude: ' + 'Null' + ', ' + 'Longitude: ' + 'Null' + '\nInternet Service Provider(ISP): ' + 'Null' + ', ' + 'Organisation: ' + 'Null' + '\nAS number(ASN): ' + 'Null')
+                    print('📭 Email not opened yet')
 
             i += 1
 

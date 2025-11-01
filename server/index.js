@@ -83,12 +83,21 @@ app.get('/p', function(req, res) {
       var uuidParam = req.query.uuid
       var uuidParamChecker = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(uuidParam)
       
-      // Use server's local time instead of external API
+      // Use server's local time and convert to IST
       var now = new Date();
-      var dateTime = now.toISOString().split("T")[0] + " " + now.toISOString().split("T")[1].split(".")[0] + ' UTC';
+      var istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000)); // Add 5:30 for IST
+      var dateTime = istTime.toISOString().split("T")[0] + " " + istTime.toISOString().split("T")[1].split(".")[0] + ' IST';
 
-      // Get IP address and location with error handling
-      var ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'Unknown';
+      // Get the first IP address (actual client IP, not proxy)
+      var forwardedIps = req.headers['x-forwarded-for'];
+      var ipAddress = 'Unknown';
+      if (forwardedIps) {
+        var ips = forwardedIps.split(',');
+        ipAddress = ips[0].trim(); // Get the first (original) IP
+      } else {
+        ipAddress = req.connection.remoteAddress || 'Unknown';
+      }
+      
       var ip = await fetch(`http://ip-api.com/json/${ipAddress}`);
       var location = await ip.json()
 
