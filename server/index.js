@@ -101,6 +101,30 @@ app.get('/p', function(req, res) {
       var ip = await fetch(`http://ip-api.com/json/${ipAddress}`);
       var location = await ip.json()
 
+      // List of known proxy/scanner IPs and organizations to ignore
+      var ignoreList = [
+        'Google', 'Gmail', 'Googlebot',
+        'Yahoo', 'Microsoft', 'Outlook',
+        'CloudFlare', 'Cloudflare',
+        'AS15169',  // Google's ASN
+        'Mountain View'  // Google HQ location
+      ];
+      
+      // Check if this is a proxy/scanner (not a real user)
+      var isProxy = false;
+      if (location.org && ignoreList.some(term => location.org.includes(term))) {
+        isProxy = true;
+      }
+      if (location.isp && ignoreList.some(term => location.isp.includes(term))) {
+        isProxy = true;
+      }
+      if (location.as && ignoreList.some(term => location.as.includes(term))) {
+        isProxy = true;
+      }
+      if (location.city && ignoreList.some(term => location.city.includes(term))) {
+        isProxy = true;
+      }
+
       // Handle missing location data
       var infoJson =  {
         time: dateTime,
@@ -108,6 +132,7 @@ app.get('/p', function(req, res) {
         country: location.country || 'Unknown',
         regionName: location.regionName || 'Unknown',
         city: location.city || 'Unknown',
+        isProxy: isProxy,  // Flag to identify proxy/scanner opens
         zip: location.zip || 'Unknown',
         lat: location.lat ? location.lat.toString() : 'Unknown',
         lon: location.lon ? location.lon.toString() : 'Unknown',

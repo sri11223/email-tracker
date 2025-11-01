@@ -57,34 +57,49 @@ def info():
                 statsArr = responseData[i]['stats']
                 if statsArr != 'Null':
                     statsArr = json.loads(statsArr)
-                    x = 0
+                    
+                    # Filter out proxy/scanner opens
+                    realOpens = [s for s in statsArr if not s.get('isProxy', False)]
+                    proxyOpens = [s for s in statsArr if s.get('isProxy', False)]
+                    
                     print('=' * 60)
                     print(f'📧 Email Tracking Report for: {var}')
-                    print(f'Total Opens: {len(statsArr)}')
                     print('=' * 60)
-                    while len(statsArr) != x:
-                        print(f'\n🔍 Open #{x+1}')
-                        print(f'⏰ Time: {statsArr[x]["time"]}')
-                        
-                        # Only show if not "Unknown"
-                        if statsArr[x]['country'] != 'Unknown':
-                            location_parts = []
-                            if statsArr[x]['city'] != 'Unknown':
-                                location_parts.append(statsArr[x]['city'])
-                            if statsArr[x]['regionName'] != 'Unknown':
-                                location_parts.append(statsArr[x]['regionName'])
-                            if statsArr[x]['country'] != 'Unknown':
-                                location_parts.append(statsArr[x]['country'])
-                            
-                            if location_parts:
-                                print(f'📍 Location: {", ".join(location_parts)}')
-                            print(f'🌐 IP Address: {statsArr[x]["ip"]}')
-                        else:
-                            print(f'📍 Location: Not available (Email opened via proxy/Gmail servers)')
-                            print(f'🌐 IP Address: {statsArr[x]["ip"]}')
-                        
+                    
+                    if len(realOpens) > 0:
+                        print(f'✅ REAL OPENS (Actual Recipients): {len(realOpens)}')
                         print('-' * 60)
-                        x += 1
+                        x = 0
+                        while x < len(realOpens):
+                            print(f'\n🔍 Open #{x+1}')
+                            print(f'⏰ Time: {realOpens[x]["time"]}')
+                            
+                            # Only show if not "Unknown"
+                            if realOpens[x]['country'] != 'Unknown':
+                                location_parts = []
+                                if realOpens[x]['city'] != 'Unknown':
+                                    location_parts.append(realOpens[x]['city'])
+                                if realOpens[x]['regionName'] != 'Unknown':
+                                    location_parts.append(realOpens[x]['regionName'])
+                                if realOpens[x]['country'] != 'Unknown':
+                                    location_parts.append(realOpens[x]['country'])
+                                
+                                if location_parts:
+                                    print(f'📍 Location: {", ".join(location_parts)}')
+                                print(f'🌐 IP Address: {realOpens[x]["ip"]}')
+                            else:
+                                print(f'📍 Location: Not available')
+                                print(f'🌐 IP Address: {realOpens[x]["ip"]}')
+                            
+                            print('-' * 60)
+                            x += 1
+                    else:
+                        print('📭 No real opens yet (Email not read by recipient)')
+                    
+                    if len(proxyOpens) > 0:
+                        print(f'\n🤖 Proxy/Scanner Opens (Gmail/Yahoo servers): {len(proxyOpens)}')
+                        print('   (These are automatic scans, not actual recipients)')
+                    
                     break
                 else:
                     print('📭 Email not opened yet')
@@ -102,34 +117,49 @@ def info():
                 statsArr = responseData[i]['stats']
                 if statsArr != 'Null':
                     statsArr = json.loads(statsArr)
-                    x = 0
+                    
+                    # Filter out proxy/scanner opens
+                    realOpens = [s for s in statsArr if not s.get('isProxy', False)]
+                    proxyOpens = [s for s in statsArr if s.get('isProxy', False)]
+                    
                     print('=' * 60)
                     print(f'📧 Email Tracking Report for ID: {var}')
-                    print(f'Total Opens: {len(statsArr)}')
                     print('=' * 60)
-                    while len(statsArr) != x:
-                        print(f'\n🔍 Open #{x+1}')
-                        print(f'⏰ Time: {statsArr[x]["time"]}')
-                        
-                        # Only show if not "Unknown"
-                        if statsArr[x]['country'] != 'Unknown':
-                            location_parts = []
-                            if statsArr[x]['city'] != 'Unknown':
-                                location_parts.append(statsArr[x]['city'])
-                            if statsArr[x]['regionName'] != 'Unknown':
-                                location_parts.append(statsArr[x]['regionName'])
-                            if statsArr[x]['country'] != 'Unknown':
-                                location_parts.append(statsArr[x]['country'])
-                            
-                            if location_parts:
-                                print(f'📍 Location: {", ".join(location_parts)}')
-                            print(f'🌐 IP Address: {statsArr[x]["ip"]}')
-                        else:
-                            print(f'📍 Location: Not available (Email opened via proxy/Gmail servers)')
-                            print(f'🌐 IP Address: {statsArr[x]["ip"]}')
-                        
+                    
+                    if len(realOpens) > 0:
+                        print(f'✅ REAL OPENS (Actual Recipients): {len(realOpens)}')
                         print('-' * 60)
-                        x += 1
+                        x = 0
+                        while x < len(realOpens):
+                            print(f'\n🔍 Open #{x+1}')
+                            print(f'⏰ Time: {realOpens[x]["time"]}')
+                            
+                            # Only show if not "Unknown"
+                            if realOpens[x]['country'] != 'Unknown':
+                                location_parts = []
+                                if realOpens[x]['city'] != 'Unknown':
+                                    location_parts.append(realOpens[x]['city'])
+                                if realOpens[x]['regionName'] != 'Unknown':
+                                    location_parts.append(realOpens[x]['regionName'])
+                                if realOpens[x]['country'] != 'Unknown':
+                                    location_parts.append(realOpens[x]['country'])
+                                
+                                if location_parts:
+                                    print(f'📍 Location: {", ".join(location_parts)}')
+                                print(f'🌐 IP Address: {realOpens[x]["ip"]}')
+                            else:
+                                print(f'📍 Location: Not available')
+                                print(f'🌐 IP Address: {realOpens[x]["ip"]}')
+                            
+                            print('-' * 60)
+                            x += 1
+                    else:
+                        print('📭 No real opens yet (Email not read by recipient)')
+                    
+                    if len(proxyOpens) > 0:
+                        print(f'\n🤖 Proxy/Scanner Opens (Gmail/Yahoo servers): {len(proxyOpens)}')
+                        print('   (These are automatic scans, not actual recipients)')
+                    
                     break
                 else:
                     print('📭 Email not opened yet')
