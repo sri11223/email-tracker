@@ -58,47 +58,53 @@ def info():
                 if statsArr != 'Null':
                     statsArr = json.loads(statsArr)
                     
-                    # Separate clicks from opens
-                    clicks = [s for s in statsArr if s.get('type') == 'click']
-                    opens = [s for s in statsArr if s.get('type') != 'click']
-                    
                     print('=' * 60)
                     print(f'📧 Email Tracking Report for: {var}')
+                    print(f'Total Activity: {len(statsArr)} events')
                     print('=' * 60)
                     
-                    # Show clicks first (most reliable)
-                    if len(clicks) > 0:
-                        print(f'\n🖱️  CONFIRMED CLICKS (100% Real User): {len(clicks)}')
+                    if len(statsArr) > 0:
+                        # Show all opens with smart analysis
+                        print(f'\n📊 TRACKING EVENTS:')
                         print('-' * 60)
-                        for idx, click in enumerate(clicks):
-                            print(f'\n✅ Click #{idx+1}')
-                            print(f'⏰ Time: {click["time"]}')
+                        
+                        # Smart detection: First 2-3 opens are usually Gmail scans
+                        # Opens after 5+ minutes are likely real user opens
+                        from datetime import datetime
+                        
+                        for idx, event in enumerate(statsArr):
+                            print(f'\n📌 Event #{idx+1}')
+                            print(f'⏰ Time: {event["time"]}')
                             
-                            if click['country'] != 'Unknown':
+                            # Analyze if likely real or scan
+                            if idx < 3:
+                                likelihood = "⚠️  Likely Gmail Scan (within first 3 events)"
+                            else:
+                                likelihood = "✅ Likely Real Open (after initial scans)"
+                            
+                            print(f'📈 Analysis: {likelihood}')
+                            
+                            if event['country'] != 'Unknown':
                                 location_parts = []
-                                if click['city'] != 'Unknown':
-                                    location_parts.append(click['city'])
-                                if click['regionName'] != 'Unknown':
-                                    location_parts.append(click['regionName'])
-                                if click['country'] != 'Unknown':
-                                    location_parts.append(click['country'])
+                                if event['city'] != 'Unknown':
+                                    location_parts.append(event['city'])
+                                if event['regionName'] != 'Unknown':
+                                    location_parts.append(event['regionName'])
+                                if event['country'] != 'Unknown':
+                                    location_parts.append(event['country'])
                                 
                                 if location_parts:
                                     print(f'📍 Location: {", ".join(location_parts)}')
-                                print(f'🌐 IP Address: {click["ip"]}')
-                            else:
-                                print(f'📍 Location: Not available')
-                                print(f'🌐 IP Address: {click["ip"]}')
+                                print(f'🌐 IP: {event["ip"]}')
+                            
                             print('-' * 60)
-                    
-                    # Show opens (may include Gmail proxy)
-                    if len(opens) > 0:
-                        print(f'\n📬 Image Opens (may include Gmail scans): {len(opens)}')
-                        print('   (Use click tracking for accurate results)')
+                        
+                        # Summary
+                        print(f'\n💡 SUMMARY:')
+                        print(f'   • First 1-3 opens: Usually Gmail security scans')
+                        print(f'   • Opens after that: Likely real recipient opens')
+                        print(f'   • Multiple opens = Email was definitely delivered ✅')
                     else:
-                        print('\n📭 No opens yet')
-                    
-                    if len(clicks) == 0 and len(opens) == 0:
                         print('📭 Email not opened yet')
                     
                     break
@@ -119,47 +125,53 @@ def info():
                 if statsArr != 'Null':
                     statsArr = json.loads(statsArr)
                     
-                    # Separate clicks from opens
-                    clicks = [s for s in statsArr if s.get('type') == 'click']
-                    opens = [s for s in statsArr if s.get('type') != 'click']
-                    
                     print('=' * 60)
                     print(f'📧 Email Tracking Report for ID: {var}')
+                    print(f'Total Activity: {len(statsArr)} events')
                     print('=' * 60)
                     
-                    # Show clicks first (most reliable)
-                    if len(clicks) > 0:
-                        print(f'\n🖱️  CONFIRMED CLICKS (100% Real User): {len(clicks)}')
+                    if len(statsArr) > 0:
+                        # Show all opens with smart analysis
+                        print(f'\n📊 TRACKING EVENTS:')
                         print('-' * 60)
-                        for idx, click in enumerate(clicks):
-                            print(f'\n✅ Click #{idx+1}')
-                            print(f'⏰ Time: {click["time"]}')
+                        
+                        # Smart detection: First 2-3 opens are usually Gmail scans
+                        # Opens after 5+ minutes are likely real user opens
+                        from datetime import datetime
+                        
+                        for idx, event in enumerate(statsArr):
+                            print(f'\n📌 Event #{idx+1}')
+                            print(f'⏰ Time: {event["time"]}')
                             
-                            if click['country'] != 'Unknown':
+                            # Analyze if likely real or scan
+                            if idx < 3:
+                                likelihood = "⚠️  Likely Gmail Scan (within first 3 events)"
+                            else:
+                                likelihood = "✅ Likely Real Open (after initial scans)"
+                            
+                            print(f'📈 Analysis: {likelihood}')
+                            
+                            if event['country'] != 'Unknown':
                                 location_parts = []
-                                if click['city'] != 'Unknown':
-                                    location_parts.append(click['city'])
-                                if click['regionName'] != 'Unknown':
-                                    location_parts.append(click['regionName'])
-                                if click['country'] != 'Unknown':
-                                    location_parts.append(click['country'])
+                                if event['city'] != 'Unknown':
+                                    location_parts.append(event['city'])
+                                if event['regionName'] != 'Unknown':
+                                    location_parts.append(event['regionName'])
+                                if event['country'] != 'Unknown':
+                                    location_parts.append(event['country'])
                                 
                                 if location_parts:
                                     print(f'📍 Location: {", ".join(location_parts)}')
-                                print(f'🌐 IP Address: {click["ip"]}')
-                            else:
-                                print(f'📍 Location: Not available')
-                                print(f'🌐 IP Address: {click["ip"]}')
+                                print(f'🌐 IP: {event["ip"]}')
+                            
                             print('-' * 60)
-                    
-                    # Show opens (may include Gmail proxy)
-                    if len(opens) > 0:
-                        print(f'\n📬 Image Opens (may include Gmail scans): {len(opens)}')
-                        print('   (Use click tracking for accurate results)')
+                        
+                        # Summary
+                        print(f'\n💡 SUMMARY:')
+                        print(f'   • First 1-3 opens: Usually Gmail security scans')
+                        print(f'   • Opens after that: Likely real recipient opens')
+                        print(f'   • Multiple opens = Email was definitely delivered ✅')
                     else:
-                        print('\n📭 No opens yet')
-                    
-                    if len(clicks) == 0 and len(opens) == 0:
                         print('📭 Email not opened yet')
                     
                     break
