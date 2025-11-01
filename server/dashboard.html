@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="Track email opens and clicks in real-time">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
     <title>Email Tracker Dashboard</title>
     <style>
         * {
@@ -473,6 +479,175 @@
         
         // Refresh every 30 seconds
         setInterval(loadTrackingList, 30000);
+        
+        // ============= PWA & NOTIFICATIONS =============
+        
+        let deferredPrompt;
+        let lastOpenCount = 0;
+        
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(reg => {
+                    console.log('✅ Service Worker registered!');
+                    
+                    // Check for notification permission
+                    if (Notification.permission === 'default') {
+                        showNotificationPrompt();
+                    }
+                })
+                .catch(err => console.error('❌ Service Worker registration failed:', err));
+        }
+        
+        // Show notification permission prompt
+        function showNotificationPrompt() {
+            const banner = document.createElement('div');
+            banner.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 350px;
+                animation: slideIn 0.3s ease;
+            `;
+            banner.innerHTML = `
+                <div style="margin-bottom: 10px; font-weight: bold;">🔔 Enable Notifications</div>
+                <div style="margin-bottom: 15px; font-size: 14px;">Get instant alerts when someone opens your email!</div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="enableNotifications()" style="flex: 1; background: white; color: #667eea; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">Enable</button>
+                    <button onclick="this.parentElement.parentElement.remove()" style="flex: 1; background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">Later</button>
+                </div>
+            `;
+            document.body.appendChild(banner);
+        }
+        
+        // Enable notifications
+        window.enableNotifications = async function() {
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    alert('✅ Notifications enabled! You\'ll get alerts when emails are opened.');
+                    document.querySelector('[style*="slideIn"]')?.remove();
+                } else {
+                    alert('❌ Notification permission denied. Enable it in browser settings.');
+                }
+            } catch (error) {
+                alert('❌ Error enabling notifications: ' + error);
+            }
+        }
+        
+        // Monitor for new opens and send notifications
+        async function checkForNewOpens() {
+            try {
+                const response = await fetch(API_URL + '/data');
+                const data = await response.json();
+                
+                const totalOpens = data.reduce((sum, item) => sum + (item.counter || 0), 0);
+                
+                if (lastOpenCount > 0 && totalOpens > lastOpenCount) {
+                    // New open detected!
+                    const newOpens = totalOpens - lastOpenCount;
+                    
+                    if (Notification.permission === 'granted') {
+                        // Find which email was opened
+                        const latestItem = data.find(item => {
+                            const stats = item.stats !== 'Null' ? JSON.parse(item.stats) : [];
+                            return stats.length > 0;
+                        });
+                        
+                        const stats = latestItem && latestItem.stats !== 'Null' ? JSON.parse(latestItem.stats) : [];
+                        const lastOpen = stats[stats.length - 1];
+                        const recipient = lastOpen?.recipient || 'Someone';
+                        
+                        new Notification('📧 Email Opened!', {
+                            body: `${recipient} just opened "${latestItem?.title || 'your email'}"`,
+                            icon: '/icon-192.svg',
+                            badge: '/icon-192.svg',
+                            vibrate: [200, 100, 200],
+                            tag: 'email-open',
+                            requireInteraction: false
+                        });
+                    }
+                }
+                
+                lastOpenCount = totalOpens;
+            } catch (error) {
+                console.error('Error checking for new opens:', error);
+            }
+        }
+        
+        // Check every 10 seconds for new opens
+        setInterval(checkForNewOpens, 10000);
+        checkForNewOpens(); // Initial check
+        
+        // PWA Install Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallBanner();
+        });
+        
+        function showInstallBanner() {
+            const banner = document.createElement('div');
+            banner.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 400px;
+                text-align: center;
+                animation: slideUp 0.3s ease;
+            `;
+            banner.innerHTML = `
+                <div style="margin-bottom: 10px; font-size: 20px;">📱</div>
+                <div style="margin-bottom: 10px; font-weight: bold;">Install Email Tracker</div>
+                <div style="margin-bottom: 15px; font-size: 14px;">Add to your home screen for quick access!</div>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="installPWA()" style="background: white; color: #667eea; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">Install App</button>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Not Now</button>
+                </div>
+            `;
+            document.body.appendChild(banner);
+        }
+        
+        window.installPWA = async function() {
+            if (!deferredPrompt) return;
+            
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+                console.log('✅ PWA installed!');
+            }
+            
+            deferredPrompt = null;
+            document.querySelector('[style*="slideUp"]')?.remove();
+        }
+        
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideUp {
+                from { transform: translate(-50%, 200px); opacity: 0; }
+                to { transform: translate(-50%, 0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
