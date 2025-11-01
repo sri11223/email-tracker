@@ -5,20 +5,34 @@ var UAParser = require('ua-parser-js');
 const {v1: uuidv1, v4: uuidv4} = require('uuid');
 
 const app = express()
-const port = 80
+const port = process.env.PORT || 3000
+
+// Add CORS and better error handling
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 
 // ENTER YOUR MONGO CLUSTER URI HERE
-const uri = 'mongodb://localhost:27017/'
+const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/'
 
 // for mongo
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 //connnects to mongoDb
-mongoose.connect(uri, { useNewUrlParser: true });
+mongoose.connect(uri, { 
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log('MongoDB connected successfully');
+}).catch(err => {
+  console.error('MongoDB connection error:', err);
+});
 
 // /schema for the mongo json
 const notesSchema = {
@@ -38,21 +52,26 @@ app.use(express.static(__dirname))
 
 app.post('/', (req, res) => {
   async function main() {
-    var dtResponse = await fetch('http://worldtimeapi.org/api/timezone/Etc/UTC');
-    var dtData = await dtResponse.json();
+    try {
+      var dtResponse = await fetch('http://worldtimeapi.org/api/timezone/Etc/UTC');
+      var dtData = await dtResponse.json();
 
-    var dateTime = dtData.datetime.split("T")[0] + " " + dtData.datetime.split("T")[1].split(".")[0] + ' UTC'
-    var uuid = uuidv4()
-    var newNote = new Note({
-      title: req.body.title,
-      dateTime: dateTime,
-      uuid: uuid,
-      counter: 0,
-      stats: 'Null'
-    });
-    newNote.save();
+      var dateTime = dtData.datetime.split("T")[0] + " " + dtData.datetime.split("T")[1].split(".")[0] + ' UTC'
+      var uuid = uuidv4()
+      var newNote = new Note({
+        title: req.body.title,
+        dateTime: dateTime,
+        uuid: uuid,
+        counter: 0,
+        stats: 'Null'
+      });
+      await newNote.save();
 
-    res.json({ uuid: `p?uuid=${uuid}` });
+      res.json({ uuid: `p?uuid=${uuid}` });
+    } catch (error) {
+      console.error('Error in POST /:', error);
+      res.status(500).json({ error: 'Internal server error', message: error.message });
+    }
   }
   main()
 })

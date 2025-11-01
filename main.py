@@ -16,14 +16,14 @@ def create():
     title = input('enter title: ')
     myobj = {'title': title}
     responseData = requests.post(url, data = myobj)
-    os.system('clear')
+    os.system('cls' if os.name == 'nt' else 'clear')
     print(url + str(json.loads(responseData.content.decode("utf-8"))['uuid']))
     print('\n\n\n')
     
 def getData():
     response = requests.get(url + 'data')
     responseData = json.loads(response.content.decode("utf-8"))    # responseData = json.loads(yasd)
-    os.system('clear')
+    os.system('cls' if os.name == 'nt' else 'clear')
     # print(responseData)
     i = 0
     while i != len(responseData):
@@ -40,7 +40,7 @@ def info():
     if main == '1':    
         i = 0
         var = input('Enter Title\n=>')
-        os.system('clear')
+        os.system('cls' if os.name == 'nt' else 'clear')
         print('\n\n')
         while i != len(responseData):
             if str(responseData[i]['title']) == var:
@@ -63,7 +63,7 @@ def info():
     if main == '2':    
         i = 0
         var = input('Enter Tracking ID(Example:- 5359ebc0-c4f2-49b5-9074-0ce0adb03a6e)\n=>')
-        os.system('clear')
+        os.system('cls' if os.name == 'nt' else 'clear')
         print('\n\n')
         while i != len(responseData):
             if str(responseData[i]['uuid']) == var:
