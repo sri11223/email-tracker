@@ -40,7 +40,8 @@ const notesSchema = {
   dateTime: String,
   uuid: String,
   counter: Number,
-  stats: String
+  stats: String,
+  recipient: String  // Store recipient email/name
 }
 
 //assigns schema to mongodb
@@ -63,7 +64,8 @@ app.post('/', (req, res) => {
         dateTime: dateTime,
         uuid: uuid,
         counter: 0,
-        stats: 'Null'
+        stats: 'Null',
+        recipient: req.body.recipient || 'Not specified'  // Store recipient
       });
       await newNote.save();
 

@@ -131,6 +131,7 @@
     <div class="container">
         <div class="header">
             <h1 id="title">📊 Email Tracking Details</h1>
+            <p id="recipient" style="color: #666; margin-top: 10px; font-size: 18px;"></p>
             <a href="/dashboard.html" class="back-btn">← Back to Dashboard</a>
         </div>
         
@@ -173,9 +174,13 @@
                     return;
                 }
                 
+                // Display recipient
+                const recipientText = item.recipient || 'Not specified';
+                document.getElementById('recipient').textContent = `👤 Recipient: ${recipientText}`;
+                
                 const stats = item.stats !== 'Null' ? JSON.parse(item.stats) : [];
-                const scans = Math.min(stats.length, 3);
-                const real = stats.length > 3 ? stats.length - 3 : 0;
+                const scans = Math.min(stats.length, 2);
+                const real = stats.length > 2 ? stats.length - 2 : 0;
                 
                 document.getElementById('totalOpens').textContent = stats.length;
                 document.getElementById('scans').textContent = scans;
@@ -188,7 +193,7 @@
                 
                 let html = '';
                 stats.forEach((event, idx) => {
-                    const isScan = idx < 3;
+                    const isScan = idx < 2;
                     const eventClass = isScan ? 'event-scan' : 'event-real';
                     const badgeClass = isScan ? 'badge-scan' : 'badge-real';
                     const badgeText = isScan ? '⚠️ Likely Gmail Scan' : '✅ Likely Real Open';

@@ -14,7 +14,8 @@ url = 'https://email-tracker-ity3.onrender.com/'
 
 def create():
     title = input('enter title: ')
-    myobj = {'title': title}
+    recipient = input('enter recipient email/name: ')
+    myobj = {'title': title, 'recipient': recipient}
     responseData = requests.post(url, data = myobj)
     os.system('cls' if os.name == 'nt' else 'clear')
     try:
@@ -36,7 +37,8 @@ def getData():
     # print(responseData)
     i = 0
     while i != len(responseData):
-        print('Title: ' + str(responseData[i]['title']) + ', ' + 'Created: ' + str(responseData[i]['dateTime']), '\nNumber of times opened: ' + str(responseData[i]['counter']) + ', ' + 'Tracking ID: ' + str(responseData[i]['uuid']))
+        recipient = responseData[i].get('recipient', 'Not specified')
+        print('Title: ' + str(responseData[i]['title']) + ', ' + 'Recipient: ' + str(recipient) + ', ' + 'Created: ' + str(responseData[i]['dateTime']), '\nNumber of times opened: ' + str(responseData[i]['counter']) + ', ' + 'Tracking ID: ' + str(responseData[i]['uuid']))
         print('\n')
         i += 1 
 
@@ -60,6 +62,7 @@ def info():
                     
                     print('=' * 60)
                     print(f'📧 Email Tracking Report for: {var}')
+                    print(f'👤 Recipient: {responseData[i].get("recipient", "Not specified")}')
                     print(f'Total Activity: {len(statsArr)} events')
                     print('=' * 60)
                     
@@ -77,8 +80,8 @@ def info():
                             print(f'⏰ Time: {event["time"]}')
                             
                             # Analyze if likely real or scan
-                            if idx < 3:
-                                likelihood = "⚠️  Likely Gmail Scan (within first 3 events)"
+                            if idx < 2:
+                                likelihood = "⚠️  Likely Gmail Scan (within first 2 events)"
                             else:
                                 likelihood = "✅ Likely Real Open (after initial scans)"
                             
@@ -101,7 +104,7 @@ def info():
                         
                         # Summary
                         print(f'\n💡 SUMMARY:')
-                        print(f'   • First 1-3 opens: Usually Gmail security scans')
+                        print(f'   • First 1-2 opens: Usually Gmail security scans')
                         print(f'   • Opens after that: Likely real recipient opens')
                         print(f'   • Multiple opens = Email was definitely delivered ✅')
                     else:
@@ -127,6 +130,7 @@ def info():
                     
                     print('=' * 60)
                     print(f'📧 Email Tracking Report for ID: {var}')
+                    print(f'👤 Recipient: {responseData[i].get("recipient", "Not specified")}')
                     print(f'Total Activity: {len(statsArr)} events')
                     print('=' * 60)
                     
@@ -144,8 +148,8 @@ def info():
                             print(f'⏰ Time: {event["time"]}')
                             
                             # Analyze if likely real or scan
-                            if idx < 3:
-                                likelihood = "⚠️  Likely Gmail Scan (within first 3 events)"
+                            if idx < 2:
+                                likelihood = "⚠️  Likely Gmail Scan (within first 2 events)"
                             else:
                                 likelihood = "✅ Likely Real Open (after initial scans)"
                             
@@ -168,7 +172,7 @@ def info():
                         
                         # Summary
                         print(f'\n💡 SUMMARY:')
-                        print(f'   • First 1-3 opens: Usually Gmail security scans')
+                        print(f'   • First 1-2 opens: Usually Gmail security scans')
                         print(f'   • Opens after that: Likely real recipient opens')
                         print(f'   • Multiple opens = Email was definitely delivered ✅')
                     else:

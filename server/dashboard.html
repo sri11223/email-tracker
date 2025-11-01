@@ -194,9 +194,10 @@
         
         <div class="actions">
             <div class="card">
-                <h2>🔗 Create New Tracking URL</h2>
-                <input type="text" id="title" placeholder="Enter email title (e.g., 'Sales Proposal')">
-                <button onclick="createTrackingURL()">Generate Tracking URL</button>
+                <h2>🎯 Create Tracking URL</h2>
+                <input type="text" id="title" placeholder="Enter title (e.g., 'Newsletter Oct 2024')">
+                <input type="text" id="recipient" placeholder="Recipient email/name (e.g., 'john@example.com')">
+                <button onclick="createTrackingURL()">Create Tracking URL</button>
                 <div id="createResult"></div>
             </div>
         </div>
@@ -222,6 +223,7 @@
         
         async function createTrackingURL() {
             const title = document.getElementById('title').value;
+            const recipient = document.getElementById('recipient').value;
             const createBtn = event.target;
             
             if (!title) {
@@ -240,7 +242,7 @@
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'title=' + encodeURIComponent(title)
+                    body: 'title=' + encodeURIComponent(title) + '&recipient=' + encodeURIComponent(recipient || 'Not specified')
                 });
                 
                 const data = await response.json();
@@ -296,12 +298,13 @@
                 data.reverse().forEach(item => {
                     const opens = item.counter || 0;
                     const stats = item.stats !== 'Null' ? JSON.parse(item.stats) : [];
-                    const realOpens = stats.length > 3 ? stats.length - 3 : 0;
+                    const realOpens = stats.length > 2 ? stats.length - 2 : 0;
                     
                     html += `
                         <div class="tracking-item">
                             <div class="tracking-title">📧 ${item.title}</div>
                             <div class="tracking-meta">
+                                <span class="badge badge-info">👤 ${item.recipient || 'Not specified'}</span>
                                 <span class="badge badge-success">${opens} Total Opens</span>
                                 <span class="badge badge-warning">~${realOpens} Likely Real</span>
                             </div>
@@ -431,7 +434,7 @@
                 data.forEach(item => {
                     const opens = item.counter || 0;
                     const stats = item.stats !== 'Null' ? JSON.parse(item.stats) : [];
-                    const realOpens = stats.length > 3 ? stats.length - 3 : 0;
+                    const realOpens = stats.length > 2 ? stats.length - 2 : 0;
                     const url = `${API_URL}/p?uuid=${item.uuid}`;
                     
                     csv += `"${item.title}","${item.dateTime}",${opens},${realOpens},"${url}"\n`;
