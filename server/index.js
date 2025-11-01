@@ -79,29 +79,33 @@ app.post('/', (req, res) => {
 // http://yourURL.com/p?uuid=
 app.get('/p', function(req, res) {
   async function main() {
-    var uuidParam = req.query.uuid
-    var uuidParamChecker = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(uuidParam)
-    
-    // Use server's local time instead of external API
-    var now = new Date();
-    var dateTime = now.toISOString().split("T")[0] + " " + now.toISOString().split("T")[1].split(".")[0] + ' UTC';
+    try {
+      var uuidParam = req.query.uuid
+      var uuidParamChecker = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(uuidParam)
+      
+      // Use server's local time instead of external API
+      var now = new Date();
+      var dateTime = now.toISOString().split("T")[0] + " " + now.toISOString().split("T")[1].split(".")[0] + ' UTC';
 
-    var ip = await fetch(`http://ip-api.com/json/${req.headers['x-forwarded-for']}`);
-    var location = await ip.json()
+      // Get IP address and location with error handling
+      var ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'Unknown';
+      var ip = await fetch(`http://ip-api.com/json/${ipAddress}`);
+      var location = await ip.json()
 
-    var infoJson =  {
-      time: dateTime,
-      ip: location.query,
-      country: location.country,
-      regionName: location.regionName,
-      city: location.city,
-      zip: location.zip,
-      lat: location.lat.toString(),
-      lon: location.lon.toString(),
-      isp: location.isp,
-      org: location.org,
-      as: location.as
-    }
+      // Handle missing location data
+      var infoJson =  {
+        time: dateTime,
+        ip: location.query || ipAddress,
+        country: location.country || 'Unknown',
+        regionName: location.regionName || 'Unknown',
+        city: location.city || 'Unknown',
+        zip: location.zip || 'Unknown',
+        lat: location.lat ? location.lat.toString() : 'Unknown',
+        lon: location.lon ? location.lon.toString() : 'Unknown',
+        isp: location.isp || 'Unknown',
+        org: location.org || 'Unknown',
+        as: location.as || 'Unknown'
+      }
 
     if (uuidParamChecker === true) {
       Note.find({uuid: uuidParam}, async function(err, notes) {
@@ -139,6 +143,11 @@ app.get('/p', function(req, res) {
       res.send("please enter a valid uuid");
     }
 
+    } catch (error) {
+      console.error('Error in GET /p:', error);
+      // Still send the image even if tracking fails
+      res.sendFile(__dirname + '/img.png');
+    }
   }
   main()
 });
