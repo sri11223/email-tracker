@@ -161,6 +161,28 @@
         .view-btn {
             background: #10b981;
         }
+        
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -200,10 +222,17 @@
         
         async function createTrackingURL() {
             const title = document.getElementById('title').value;
+            const createBtn = event.target;
+            
             if (!title) {
                 alert('Please enter a title');
                 return;
             }
+            
+            // Disable button and show loader
+            createBtn.disabled = true;
+            createBtn.innerHTML = '⏳ Creating... <span class="loader"></span>';
+            document.getElementById('createResult').innerHTML = '';
             
             try {
                 const response = await fetch(API_URL + '/', {
@@ -229,7 +258,14 @@
                 
                 document.getElementById('title').value = '';
                 loadTrackingList();
+                
+                // Re-enable button
+                createBtn.disabled = false;
+                createBtn.innerHTML = 'Generate Tracking URL';
             } catch (error) {
+                // Re-enable button on error
+                createBtn.disabled = false;
+                createBtn.innerHTML = 'Generate Tracking URL';
                 alert('Error creating tracking URL: ' + error);
             }
         }
@@ -304,6 +340,11 @@
                 return;
             }
             
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Deleting...';
+            
             try {
                 const response = await fetch(API_URL + '/data/' + uuid, {
                     method: 'DELETE'
@@ -315,9 +356,13 @@
                     loadTrackingList();
                 } else {
                     alert('❌ Error: ' + result.message);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
                 }
             } catch (error) {
                 alert('❌ Error deleting tracking: ' + error);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
         
@@ -330,6 +375,11 @@
                 return;
             }
             
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Clearing... <span class="loader"></span>';
+            
             try {
                 const response = await fetch(API_URL + '/data/clear', {
                     method: 'DELETE'
@@ -341,9 +391,13 @@
                     loadTrackingList();
                 } else {
                     alert('❌ Error: ' + result.message);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
                 }
             } catch (error) {
                 alert('❌ Error clearing data: ' + error);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
         
