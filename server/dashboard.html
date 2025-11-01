@@ -181,6 +181,16 @@
         
         <div class="tracking-list">
             <h2 style="color: #667eea; margin-bottom: 20px;">📊 All Tracking URLs</h2>
+            
+            <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="searchBox" placeholder="🔍 Search by title..." 
+                       onkeyup="filterTrackings()" 
+                       style="flex: 1; min-width: 200px; margin: 0;">
+                <button class="copy-btn" onclick="exportData()" style="width: auto; background: #10b981;">
+                    📥 Export CSV
+                </button>
+            </div>
+            
             <div id="trackingList">Loading...</div>
         </div>
     </div>
@@ -235,6 +245,18 @@
                 }
                 
                 let html = '';
+                
+                // Add "Clear All" button at top
+                if (data.length > 0) {
+                    html += `
+                        <div style="margin-bottom: 20px; text-align: right;">
+                            <button class="copy-btn" onclick="clearAllData()" style="background: #ef4444; width: auto;">
+                                🗑️ Clear All Data
+                            </button>
+                        </div>
+                    `;
+                }
+                
                 data.reverse().forEach(item => {
                     const opens = item.counter || 0;
                     const stats = item.stats !== 'Null' ? JSON.parse(item.stats) : [];
@@ -254,7 +276,9 @@
                                 ${API_URL}/p?uuid=${item.uuid}
                             </div>
                             <button class="copy-btn" onclick="copyToClipboard('${API_URL}/p?uuid=${item.uuid}')">📋 Copy URL</button>
+                            <button class="copy-btn" onclick="copyToClipboard('<img src=\\'${API_URL}/p?uuid=${item.uuid}\\' width=\\'1\\' height=\\'1\\'>')">📋 Copy HTML</button>
                             <button class="copy-btn view-btn" onclick="viewDetails('${item.uuid}', '${item.title}')">👁️ View Details</button>
+                            <button class="copy-btn" onclick="deleteTracking('${item.uuid}', '${item.title}')" style="background: #ef4444;">🗑️ Delete</button>
                         </div>
                     `;
                 });
@@ -273,6 +297,105 @@
         
         function viewDetails(uuid, title) {
             window.location.href = `/details?uuid=${uuid}&title=${encodeURIComponent(title)}`;
+        }
+        
+        async function deleteTracking(uuid, title) {
+            if (!confirm(`Are you sure you want to delete tracking for "${title}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(API_URL + '/data/' + uuid, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert('✅ Tracking deleted successfully!');
+                    loadTrackingList();
+                } else {
+                    alert('❌ Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Error deleting tracking: ' + error);
+            }
+        }
+        
+        async function clearAllData() {
+            if (!confirm('⚠️ Are you sure you want to DELETE ALL tracking data? This cannot be undone!')) {
+                return;
+            }
+            
+            if (!confirm('⚠️⚠️ FINAL WARNING: This will permanently delete ALL tracking URLs and analytics!')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(API_URL + '/data/clear', {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert('✅ All tracking data cleared successfully!');
+                    loadTrackingList();
+                } else {
+                    alert('❌ Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Error clearing data: ' + error);
+            }
+        }
+        
+        function filterTrackings() {
+            const searchText = document.getElementById('searchBox').value.toLowerCase();
+            const items = document.querySelectorAll('.tracking-item');
+            
+            items.forEach(item => {
+                const title = item.querySelector('.tracking-title').textContent.toLowerCase();
+                if (title.includes(searchText)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        async function exportData() {
+            try {
+                const response = await fetch(API_URL + '/data');
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    alert('No data to export');
+                    return;
+                }
+                
+                // Create CSV content
+                let csv = 'Title,Created,Total Opens,Likely Real Opens,Tracking URL\n';
+                
+                data.forEach(item => {
+                    const opens = item.counter || 0;
+                    const stats = item.stats !== 'Null' ? JSON.parse(item.stats) : [];
+                    const realOpens = stats.length > 3 ? stats.length - 3 : 0;
+                    const url = `${API_URL}/p?uuid=${item.uuid}`;
+                    
+                    csv += `"${item.title}","${item.dateTime}",${opens},${realOpens},"${url}"\n`;
+                });
+                
+                // Download CSV
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `email-tracking-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                alert('✅ Data exported successfully!');
+            } catch (error) {
+                alert('❌ Error exporting data: ' + error);
+            }
         }
         
         // Load tracking list on page load
